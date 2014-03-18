@@ -1,5 +1,10 @@
 /*jshint white:false */
 /* global angular:false, Detector:false, console:false */
+
+var tex, mat, mesh;
+
+
+
 var PI_2 = Math.PI / 2;
 angular.module('threejs')
 	.controller('MainCtrl', function ($scope, $http) {
@@ -216,6 +221,7 @@ angular.module('threejs')
       theTiles += "]";
       return JSON.parse( theTiles );
     },
+    
     tilePie: function (slices) {
       console.log('tilePie('+slices+')');
       var xOffset = -0.4;
@@ -235,43 +241,32 @@ angular.module('threejs')
         return radians * (180/Math.PI)
       }
       
-      var getWedge = function (startX, startY, startDeg, endDeg,material ) {
-        if(material === undefined){
-          material = new THREE.LineBasicMaterial( { 'color': color, 'linewidth': 1 } );
-        }
+      var getWedge = function (startX, startY, startDeg, endDeg) {
         var geometry = new THREE.Geometry();
         var x=0.5;
         var y=0.5;
         var startRad = getRadians(startDeg);
         var endRad = getRadians(endDeg);
-        geometry.vertices.push( new THREE.Vector3( 0, 0, 0 ) );
-        geometry.vertices.push( new THREE.Vector3( cos(startRad), sin(startRad), 0 ) );
-        geometry.vertices.push( new THREE.Vector3( cos(endRad), sin(endRad), 0 ) );
-        geometry.vertices.push( new THREE.Vector3( 0, 0, 0 ) );
+        var a = new THREE.Vector3( 0, 0, 0 );
+        var b = new THREE.Vector3( cos(startRad), sin(startRad), 0 );
+        var c = new THREE.Vector3( cos(endRad), sin(endRad), 0 );
+        
+        geometry.vertices.push( a, b, c );
+        // geometry.computeTangents();
+        var face = new THREE.Face3( 0,1,2 );
+        face.normal.set(0,0,1); // normal
 
-        var line = new THREE.Line( geometry, material );
+        geometry.faces.push( face );
+        geometry.faceVertexUvs[0].push([new THREE.Vector2(1,0),new THREE.Vector2(1,1),new THREE.Vector2(0,3)]); // uvs
+console.log('scope.material',$scope.material);        
+        var line = new THREE.Mesh( geometry, $scope.material );
        return line; 
       }
-      var colors = [
-        0xff0000, //1 red
-        0x00ff00, //2 green
-        0x0000ff, //3 blue
-        0xffff00, //4 yellow
-        0x00ffff, //5 lightblue
-        0xff00ff, //6 fuscia
-        0x000000, //7 black
-        0xffffff  //8 white
-      ];
       
       var sliceDeg = 360/slices;
       
       for (var i = slices - 1; i >= 0; i--) {
-        var material = new THREE.LineBasicMaterial( {
-          'color': colors[i%colors.length-1],
-          'linewidth': 1
-        });
-        $scope.scene.add( getWedge(0.5,0.5,sliceDeg*i,sliceDeg*(i+1),material ));
-        
+        $scope.scene.add( getWedge(0.5,0.5, sliceDeg*i, sliceDeg*(i+1)));
       }      
 
       
@@ -453,6 +448,11 @@ angular.module('threejs')
   	$scope.scene	= new THREE.Scene();
   	$scope.camera	= new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight*.8, 0.01, 1000);
   	$scope.camera.position.z = 4;
+    
+    $scope.material=new THREE.MeshPhongMaterial({ map: THREE.ImageUtils.loadTexture('/data/images/trees.png', null)
+      });
+
+    
   	// declare the rendering loop
   	$scope.onRenderFcts= [];
 
