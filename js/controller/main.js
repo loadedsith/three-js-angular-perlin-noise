@@ -1,11 +1,6 @@
 /*jshint white:false */
 /* global angular:false, Detector:false, console:false */
 
-var tex, mat, mesh;
-
-
-
-var PI_2 = Math.PI / 2;
 angular.module('threejs')
 	.controller('MainCtrl', function ($scope, $http) {
 	'use strict';
@@ -147,8 +142,51 @@ angular.module('threejs')
         }
       }
     }
-  }
+  };
+  
+  $scope.wedgeManager = {
+    
+    createWedge: function (startX, startY, startDeg, endDeg) {
+      var geometry = new THREE.Geometry(),
+        Pi = Math.PI,
+        sin = Math.sin,
+        cos = Math.cos,
+        getRadians = function (deg) {return deg * (Math.PI/180)},
+        getDegrees = function (radians) {return radians * (180/Math.PI)},
+        x=0.5,
+        y=0.5,
+        startRad = getRadians(startDeg),
+        endRad = getRadians(endDeg),
+        a = new THREE.Vector3( 0, 0, 0 ),
+        b = new THREE.Vector3( cos(startRad), sin(startRad), 0 ),
+        c = new THREE.Vector3( cos(endRad), sin(endRad), 0 );
 
+      geometry.vertices.push( a, b, c );
+
+      var face = new THREE.Face3( 0,1,2 );
+      face.normal.set(0,0,1); // normal
+
+      geometry.faces.push( face );
+      geometry.faceVertexUvs[0].push([new THREE.Vector2(1,0),new THREE.Vector2(1,1),new THREE.Vector2(0,3)]); // uvs
+      
+       
+      var line = new THREE.Mesh( geometry, $scope.material );
+
+      return line; 
+    },
+    wedgePie: function (slices) {
+      console.log('wedgePie('+slices+')');
+      var xOffset = -0.4,
+        yOffset = -0.5,
+        startDeg = 270;
+      var sliceDeg = 360/slices;
+      
+      for (var i = slices - 1; i >= 0; i--) {
+        $scope.scene.add( $scope.wedgeManager.createWedge(0.5,0.5, sliceDeg*i, sliceDeg*(i+1)));
+      } 
+      
+    }
+  };
   $scope.tileManager = {
     tiles:[],
     getTileInfo: function (tile){
@@ -222,56 +260,7 @@ angular.module('threejs')
       return JSON.parse( theTiles );
     },
     
-    tilePie: function (slices) {
-      console.log('tilePie('+slices+')');
-      var xOffset = -0.4;
-      var yOffset = -0.5;
-      var wedge = 0.1;
-      
-      var startDeg = 270;
-      var Pi = Math.PI;
-      var sin = Math.sin;
-      var cos = Math.cos;
-      
-      var getRadians = function (degrees) {
-        return degrees * (Math.PI/180)
-      }
-      
-      var getDegrees = function (radians) {
-        return radians * (180/Math.PI)
-      }
-      
-      var getWedge = function (startX, startY, startDeg, endDeg) {
-        var geometry = new THREE.Geometry();
-        var x=0.5;
-        var y=0.5;
-        var startRad = getRadians(startDeg);
-        var endRad = getRadians(endDeg);
-        var a = new THREE.Vector3( 0, 0, 0 );
-        var b = new THREE.Vector3( cos(startRad), sin(startRad), 0 );
-        var c = new THREE.Vector3( cos(endRad), sin(endRad), 0 );
-        
-        geometry.vertices.push( a, b, c );
-        // geometry.computeTangents();
-        var face = new THREE.Face3( 0,1,2 );
-        face.normal.set(0,0,1); // normal
-
-        geometry.faces.push( face );
-        geometry.faceVertexUvs[0].push([new THREE.Vector2(1,0),new THREE.Vector2(1,1),new THREE.Vector2(0,3)]); // uvs
-console.log('scope.material',$scope.material);        
-        var line = new THREE.Mesh( geometry, $scope.material );
-       return line; 
-      }
-      
-      var sliceDeg = 360/slices;
-      
-      for (var i = slices - 1; i >= 0; i--) {
-        $scope.scene.add( getWedge(0.5,0.5, sliceDeg*i, sliceDeg*(i+1)));
-      }      
-
-      
-      
-    },
+    
     tileGrid : function (rows,columns){
       console.log('tileGrid('+rows+','+columns+')');
       var column=0;
@@ -449,7 +438,8 @@ console.log('scope.material',$scope.material);
   	$scope.camera	= new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight*.8, 0.01, 1000);
   	$scope.camera.position.z = 4;
     
-    $scope.material=new THREE.MeshPhongMaterial({ map: THREE.ImageUtils.loadTexture('/data/images/trees.png', null)
+    $scope.material=new THREE.MeshPhongMaterial({ 
+      map: THREE.ImageUtils.loadTexture('/data/images/trees.png', null)
       });
 
     
@@ -492,7 +482,7 @@ console.log('scope.material',$scope.material);
     //   $scope.mesh.rotateZ(0.0 * delta);    
     // })
     // $scope.tileManager.tileGrid(8,8);
-    $scope.tileManager.tilePie(8);
+    $scope.wedgeManager.wedgePie(8);
   
   	//////////////////////////////////////////////////////////////////////////////////
   	//		Camera Controls							//
