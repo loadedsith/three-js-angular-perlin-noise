@@ -114,25 +114,7 @@ angular.module('threejs')
     }
   };
   $scope.doOnce = true;
-  // $scope.mouseDown = function ($event) {
- // 
- //    var vector = new THREE.Vector3( 
- //        ( event.clientX / window.innerWidth ) * 2 - 1, 
- //        - ( event.clientY / window.innerHeight ) * 2 + 1, 
- //        0.5 );
- //    var projector = new THREE.Projector();
- //    projector.unprojectVector( vector, $scope.camera );
- // 
- //    var ray = new THREE.Raycaster( $scope.camera.position, vector.sub( $scope.camera.position ).normalize() );
- // 
- //    var intersects = ray.intersectObjects( $scope.scene.children );    
- // 
- //    if ( intersects.length > 0 ) {
- //        intersects[0].object.callback(intersects[0].object.id);
- // 
- //    }
- //    
- //  }
+ 
   $scope.shouldAddedValueFunction = true;
   $scope.toolManager = {
     show: function (toolName){
@@ -179,62 +161,122 @@ angular.module('threejs')
      for (var i = $scope.tileManager.tiles.length - 1; i >= 0; i--) {
        var tile = $scope.tileManager.tiles[i];
        console.log('tile.row:'+tile.row+' === '+row+', tile.column:'+tile.column+' === '+column);
-       if( Number(tile.row) === Number(row) && Number(tile.column) === Number(column) ){
-         console.log('yep');
-         return $scope.tileManager.getTileInfo(tile);
-       }else{
-         console.log('nope');
-       }
-     }
-     throw "invalid Tile"
-   },
-    getTileById: function (id){
-     for (var i = $scope.tileManager.tiles.length - 1; i >= 0; i--) {
-       var tile = $scope.tileManager.tiles[i];
-       // console.log('tile.id:'+tile.id+' === '+id);
-       if( Number(tile.id) === Number(id)){
-
-         // return $scope.tileManager.getTileInfo(tile);
-         return tile;
-       }
-     }
-     throw "invalid Tile"
-   },
-   loadTiles: function (tiles){
-     if(typeof tiles!=="undefined"){
-       for (var i = tiles.length - 1; i >= 0; i--) {
-         var tile = tiles[i];
-         $scope.tileManager.createTile(tile);
-       }
-       console.log('Smarty Spur-winged Goose',tiles);
-     }
-   },
-   getTiles: function () {
-     var theTiles = "["
-     for (var i = $scope.tileManager.tiles.length - 1; i >= 0; i--) {
-       var tile = $scope.tileManager.tiles[i];
-       // console.log('tile.id:'+tile.id+' === '+id);
-       var object = {
-        tileId:tile.id,
-        row:tile.row,
-        column:tile.column,
-        rotation:{'x':tile.rotation.x,'y':tile.rotation.y,'z':tile.rotation.z},
-        scale:{'x':tile.scale.x,'y':tile.scale.y,'z':tile.scale.z},
-        position:{'x':tile.position.x,'y':tile.position.y,'z':tile.position.z},
-        callback:tile.callback,
-        positionCallback:tile.positionCallback,
-        color:tile.color
-      };
-
-      console.log('Smarty Indigo Macaw',object);
-      theTiles += JSON.stringify(object);
-      if(i !== 0){
-       theTiles += ",";
+        if( Number(tile.row) === Number(row) && Number(tile.column) === Number(column) ){
+          console.log('yep');
+          return $scope.tileManager.getTileInfo(tile);
+        }else{
+          console.log('nope');
+        }
       }
-    }
-    theTiles += "]";
-    return JSON.parse( theTiles );
-   },
+      throw "invalid Tile"
+    },
+    getTileById: function (id){
+      for (var i = $scope.tileManager.tiles.length - 1; i >= 0; i--) {
+        var tile = $scope.tileManager.tiles[i];
+        // console.log('tile.id:'+tile.id+' === '+id);
+        if( Number(tile.id) === Number(id)){
+         // return $scope.tileManager.getTileInfo(tile);
+          return tile;
+        }
+      }
+      throw "invalid Tile"
+    },
+    loadTiles: function (tiles){
+      if(typeof tiles!=="undefined"){
+        for (var i = tiles.length - 1; i >= 0; i--) {
+          var tile = tiles[i];
+          $scope.tileManager.createTile(tile);
+        }
+        console.log('Smarty Spur-winged Goose',tiles);
+      }
+    },
+    getTiles: function () {
+      var theTiles = "["
+      for (var i = $scope.tileManager.tiles.length - 1; i >= 0; i--) {
+        var tile = $scope.tileManager.tiles[i];
+        // console.log('tile.id:'+tile.id+' === '+id);
+        var object = {
+          tileId:tile.id,
+          row:tile.row,
+          column:tile.column,
+          rotation:{'x':tile.rotation.x,'y':tile.rotation.y,'z':tile.rotation.z},
+          scale:{'x':tile.scale.x,'y':tile.scale.y,'z':tile.scale.z},
+          position:{'x':tile.position.x,'y':tile.position.y,'z':tile.position.z},
+          callback:tile.callback,
+          positionCallback:tile.positionCallback,
+          color:tile.color
+        };
+
+        console.log('Smarty Indigo Macaw',object);
+        theTiles += JSON.stringify(object);
+        if(i !== 0){
+          theTiles += ",";
+        }
+      }
+      theTiles += "]";
+      return JSON.parse( theTiles );
+    },
+    tilePie: function (slices) {
+      console.log('tilePie('+slices+')');
+      var xOffset = -0.4;
+      var yOffset = -0.5;
+      var wedge = 0.1;
+      
+      var startDeg = 270;
+      var Pi = Math.PI;
+      var sin = Math.sin;
+      var cos = Math.cos;
+      
+      var getRadians = function (degrees) {
+        return degrees * (Math.PI/180)
+      }
+      
+      var getDegrees = function (radians) {
+        return radians * (180/Math.PI)
+      }
+      
+      var getWedge = function (startX, startY, startDeg, endDeg,material ) {
+        if(material === undefined){
+          material = new THREE.LineBasicMaterial( { 'color': color, 'linewidth': 1 } );
+        }
+        var geometry = new THREE.Geometry();
+        var x=0.5;
+        var y=0.5;
+        var startRad = getRadians(startDeg);
+        var endRad = getRadians(endDeg);
+        geometry.vertices.push( new THREE.Vector3( 0, 0, 0 ) );
+        geometry.vertices.push( new THREE.Vector3( cos(startRad), sin(startRad), 0 ) );
+        geometry.vertices.push( new THREE.Vector3( cos(endRad), sin(endRad), 0 ) );
+        geometry.vertices.push( new THREE.Vector3( 0, 0, 0 ) );
+
+        var line = new THREE.Line( geometry, material );
+       return line; 
+      }
+      var colors = [
+        0xff0000, //1 red
+        0x00ff00, //2 green
+        0x0000ff, //3 blue
+        0xffff00, //4 yellow
+        0x00ffff, //5 lightblue
+        0xff00ff, //6 fuscia
+        0x000000, //7 black
+        0xffffff  //8 white
+      ];
+      
+      var sliceDeg = 360/slices;
+      
+      for (var i = slices - 1; i >= 0; i--) {
+        var material = new THREE.LineBasicMaterial( {
+          'color': colors[i%colors.length-1],
+          'linewidth': 1
+        });
+        $scope.scene.add( getWedge(0.5,0.5,sliceDeg*i,sliceDeg*(i+1), ));
+        
+      }      
+
+      
+      
+    },
     tileGrid : function (rows,columns){
       console.log('tileGrid('+rows+','+columns+')');
       var column=0;
@@ -449,7 +491,8 @@ angular.module('threejs')
     //   $scope.mesh.rotateY(0.1 * delta);    
     //   $scope.mesh.rotateZ(0.0 * delta);    
     // })
-    $scope.tileManager.tileGrid(8,8);
+    // $scope.tileManager.tileGrid(8,8);
+    $scope.tileManager.tilePie(8);
   
   	//////////////////////////////////////////////////////////////////////////////////
   	//		Camera Controls							//
