@@ -270,7 +270,7 @@ angular.module('threejs')
           'color': colors[i%colors.length-1],
           'linewidth': 1
         });
-        $scope.scene.add( getWedge(0.5,0.5,sliceDeg*i,sliceDeg*(i+1), ));
+        $scope.scene.add( getWedge(0.5,0.5,sliceDeg*i,sliceDeg*(i+1),material ));
         
       }      
 
