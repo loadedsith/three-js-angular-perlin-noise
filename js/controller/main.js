@@ -10,7 +10,7 @@ angular.module('threejs').controller('MainCtrl', function ($scope, $http) {
     $http.get('/threejs.json').success(function(data) {
       $scope.config = data;
       $scope.img = new Image();
-      $scope.img.src = '/data/images/grid.png';
+      $scope.img.src = '/data/images/trees.png';
       $scope.img.onload = $scope.init;
       // $scope.templates = data.templates;
     });
@@ -229,8 +229,8 @@ angular.module('threejs').controller('MainCtrl', function ($scope, $http) {
               timeScale = animationTime/this.duration;
             this.mesh.material.map.offset.setY( 1 * ( 0.5 * timeScale ) );
             this.mesh.material.map.offset.setX( 1 * ( 0.5 * timeScale ) );
-            if(this.id===1 && timeScale>.5 && doIt==='once'){
-              doIt = false;
+            if(this.id===1 && timeScale>.5 && this.doIt==='once'){
+              this.doIt = false;
               $scope.debug(['this.mesh.material.map',this.mesh.material.map]);
             }
           }
@@ -266,7 +266,7 @@ angular.module('threejs').controller('MainCtrl', function ($scope, $http) {
       //--------------------------
       //-  make the 2d material  -
       //--------------------------
-      var imgWidth = 684, imgHeight = 682;
+      var imgWidth = 517, imgHeight = 777;
       var mapCanvas = document.createElement( 'canvas' );
       mapCanvas.width = mapCanvas.height = 256;
       // document.body.appendChild( mapCanvas );
@@ -375,8 +375,8 @@ angular.module('threejs').controller('MainCtrl', function ($scope, $http) {
     backLight.position.set(-0.5, -0.5, -2);
     $scope.scene.add( backLight );    
 
-    $scope.wedgeManager.wedgePie(8,0,180);
-    // $scope.wedgeManager.wedgePie(8,-180,180);
+    $scope.wedgeManager.wedgePie(40,0,360);
+    // $scope.wedgeManager.wedgePie(8,90,180);
   
     //////////////////////////////////////////////////////////////////////////////////
     //    Camera Controls             //
