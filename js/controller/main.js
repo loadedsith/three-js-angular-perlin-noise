@@ -345,17 +345,7 @@ angular.module('threejs').controller('MainCtrl', function ($scope, $http) {
         }
       }
     }
-  };//end wedge manager
-  
-
-  $scope.toolManager.loadTiles = function (){
-    if(typeof $scope.tileSets !== 'undefined'){      
-      $scope.tileManager.loadTiles($scope.tileSets[0]);
-    }else{          
-      console.log('No tiles to load');
-    }
-  };
-  
+  };//end wedge manager  
   
   $scope.init = function () {
     console.log('MainCtrl Init');
