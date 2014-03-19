@@ -4676,11 +4676,10 @@ table {
   border: 1px solid #f0f; }
 
 /* line 8, ../scss/main.scss */
-.wrapper .header {
+.wrapper .overlay {
   position: absolute;
   top: 0;
   left: 0;
   display: block;
   width: 100%;
-  color: #fff;
-  background: rgba(0, 0, 0, 0.1); }
+  color: #fff; }
