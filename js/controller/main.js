@@ -143,11 +143,47 @@ angular.module('threejs')
       }
     }
   };
-  
+ 
   $scope.wedgeManager = {
+    wedges:[],
     
-    createWedge: function (startX, startY, startDeg, endDeg) {
-      var geometry = new THREE.Geometry(),
+    uv:[{x:1,y:0},{x:1,y:1},{x:0,y:1}],
+    
+    setUvs: function (attribute) {
+      console.log('setuvs','');
+      for (var i = $scope.wedgeManager.wedges.length - 1; i >= 0; i--) {
+        var wedge = $scope.wedgeManager.wedges[i];
+        wedge.geometry.faceVertexUvs[0] = [];
+        wedge.geometry.faceVertexUvs[0].push( [
+          new THREE.Vector2($scope.wedgeManager.uv[0].x,$scope.wedgeManager.uv[0].y),
+          new THREE.Vector2($scope.wedgeManager.uv[1].x,$scope.wedgeManager.uv[1].y),
+          new THREE.Vector2($scope.wedgeManager.uv[2].x,$scope.wedgeManager.uv[2].y)
+        ]);
+        wedge.geometry.uvsNeedUpdate=true;
+        
+      }
+    },
+    getWedgeById: function (id){
+      for (var i = $scope.wedgeManager.wedges.length - 1; i >= 0; i--) {
+        var wedge = $scope.wedgeManager.wedges[i];
+        // console.log('tile.id:'+tile.id+' === '+id);
+        if( Number(wedge.id) === Number(id)){
+         // return $scope.tileManager.getTileInfo(tile);
+          return wedge;
+        }
+      }
+      throw "invalid Wedge"
+    },
+    createWedge: function (startX, startY,radius, startDeg, endDeg) {
+      var newWedge ={
+          geometry : new THREE.Geometry(),
+          rotation:{ x:0, y:0, z:0 },
+          positionCallback: function (delta,time) {
+            // var tex = this.mesh.material.map;
+            // tex.offset.setY(Math.sin(time));
+          }          
+        },
+        id = $scope.wedgeManager.wedges.length,
         Pi = Math.PI,
         sin = Math.sin,
         cos = Math.cos,
@@ -158,35 +194,66 @@ angular.module('threejs')
         startRad = getRadians(startDeg),
         endRad = getRadians(endDeg),
         a = new THREE.Vector3( 0, 0, 0 ),
-        b = new THREE.Vector3( cos(startRad), sin(startRad), 0 ),
-        c = new THREE.Vector3( cos(endRad), sin(endRad), 0 );
+        b = new THREE.Vector3( radius*cos(startRad), radius*sin(startRad), 0 ),
+        c = new THREE.Vector3( radius*cos(endRad), radius*sin(endRad), 0 );
 
-      geometry.vertices.push( a, b, c );
+        
+
+      newWedge.geometry.vertices.push( a, b, c );
 
       var face = new THREE.Face3( 0,1,2 );
       face.normal.set(0,0,1); // normal
 
-      geometry.faces.push( face );
-      geometry.faceVertexUvs[0].push([new THREE.Vector2(1,0),new THREE.Vector2(1,1),new THREE.Vector2(0,3)]); // uvs
+      newWedge.geometry.faces.push( face );
+      newWedge.geometry.faceVertexUvs[0].push([
+        new THREE.Vector2($scope.wedgeManager.uv[0].x,$scope.wedgeManager.uv[0].y),
+        new THREE.Vector2($scope.wedgeManager.uv[1].x,$scope.wedgeManager.uv[1].y),
+        new THREE.Vector2($scope.wedgeManager.uv[2].x,$scope.wedgeManager.uv[2].y)
+      ]); // uvs
       
        
-      var line = new THREE.Mesh( geometry, $scope.material );
-
-      return line; 
+      newWedge.mesh = new THREE.Mesh( newWedge.geometry, $scope.material );
+      newWedge.mesh.callback = function (id) {
+        console.log("clicked wedge: "+id);
+      };
+      
+      $scope.wedgeManager.wedges.push(newWedge);
+      $scope.scene.add( newWedge.mesh ); 
+      if($scope.shouldAddedValueFunction){
+        $scope.onRenderFcts.push($scope.wedgeManager.updateWedges);
+        $scope.shouldAddedValueFunction=false;
+      }
     },
     wedgePie: function (slices) {
       console.log('wedgePie('+slices+')');
       var xOffset = -0.4,
         yOffset = -0.5,
-        startDeg = 270;
+        startDeg = 90;
       var sliceDeg = 360/slices;
       
       for (var i = slices - 1; i >= 0; i--) {
-        $scope.scene.add( $scope.wedgeManager.createWedge(0.5,0.5, sliceDeg*i, sliceDeg*(i+1)));
+        $scope.wedgeManager.createWedge(0,0,2, sliceDeg*i, sliceDeg*(i+1));
       } 
       
+    },
+    doOnce: true,
+    updateWedges : function (delta,time){
+      for (var i = $scope.wedgeManager.wedges.length - 1; i >= 0; i--) {
+        var wedge = $scope.wedgeManager.wedges[i];
+        wedge.mesh.rotateX(wedge.rotation.x * delta);
+        wedge.mesh.rotateY(wedge.rotation.y * delta);
+        wedge.mesh.rotateZ(wedge.rotation.z * delta);
+        if(typeof wedge.positionCallback !== "undefined"){
+          wedge.positionCallback(delta,time);
+        }
+        if($scope.wedgeManager.doOnce){
+        console.log('wedge.mesh.material.map',wedge.mesh.material.map);
+          $scope.wedgeManager.doOnce = false;
+        }
+      }
     }
-  };
+  };//end wedge manager
+  
   $scope.tileManager = {
     tiles:[],
     getTileInfo: function (tile){
@@ -395,7 +462,7 @@ angular.module('threejs')
       $scope.tileManager.tiles.push(newTile);
       
       if($scope.shouldAddedValueFunction){
-        $scope.onRenderFcts.push($scope.tileManager.updateTiles);
+        $scope.onRenderFcts.push($scope.wedgeManager.updateWedges);
         $scope.shouldAddedValueFunction=false;
       }
     }
@@ -439,8 +506,8 @@ angular.module('threejs')
   	$scope.camera.position.z = 4;
     
     $scope.material=new THREE.MeshPhongMaterial({ 
-      map: THREE.ImageUtils.loadTexture('/data/images/trees.png', null)
-      });
+      map: THREE.ImageUtils.loadTexture('/data/images/atlas_left@2x.jpg', null)
+    });
 
     
   	// declare the rendering loop
