@@ -163,7 +163,6 @@ angular.module('threejs')
           new THREE.Vector2($scope.wedgeManager.uv[2].x,$scope.wedgeManager.uv[2].y)
         ]);
         wedge.geometry.uvsNeedUpdate=true;
-        
       }
     },
     setOffset: function () {
@@ -189,31 +188,47 @@ angular.module('threejs')
       throw "invalid Wedge"
     },
     createWedge: function (startX, startY,radius, startDeg, endDeg) {
-      var newWedge ={
-          geometry : new THREE.Geometry(),
-          rotation:{ x:0, y:0, z:0 },
-          positionCallback: function (delta,time) {
+      var id = $scope.wedgeManager.wedges.length,
+        newWedge ={
+          'geometry': new THREE.Geometry(),
+          'rotation': { x:0, y:0, z:0 },
+          'id':id,
+          'shouldBeFolded':true,
+          'destiny':[],
+          'duration':1,// seconds
+          'fold': function () {
+            var startDeg = 90, 
+              endDeg = 360/8+startDeg,
+              getRadians = function (deg) {return deg * (Math.PI/180)},
+              getDegrees = function (radians) {return radians * (180/Math.PI)},
+              startRad = getRadians(startDeg),
+              endRad = getRadians(endDeg),
+              vertex2 ={x:radius*cos(startRad), y:radius*sin(startRad)},
+              vertex3 ={x:radius*cos(endRad), y:radius*sin(endRad)};
+              this.geometry.vertices[0].setX(0);
+              this.geometry.vertices[0].setY(0);
+              this.geometry.vertices[1].setX(vertex2.x);
+              this.geometry.vertices[1].setY(vertex2.y);
+              this.geometry.vertices[2].setX(vertex3.x);
+              this.geometry.vertices[2].setY(vertex3.y);
+          },
+          'setDestiny': function (attribute) {
+            for (var i = this.geometry.vertices.length - 1; i >= 0; i--) {
+              var vertex = this.geometry.vertices[i];
+              this.destiny.push([vertex.x,vertex.y])
+            }
+            console.log('this.destiny',this.destiny);
+          },
+          'positionCallback': function (delta,time) {
+            if(this.shouldBeFolded){
+              this.shouldBeFolded = false;
+              this.setDestiny();
+              this.fold();
+            }
             
-            // #### perlinCallback
-            // noise.simplex2 and noise.perlin2 return values between -1 and 1.
-            var value = noise.simplex3(this.row / 10, this.column / 10, time/4);
-            // var valuer = noise.simplex3(this.row / 10, this.column / 10,time/4+100 );
-            // var valueg = noise.simplex3(this.row / 10, this.column / 10,time/4+1000 );
-            // var valueb = noise.simplex3(this.row / 10, this.column / 10,time/4+10000 );
-
-            // var newZ = 0+Math.abs(value);
-            // this.mesh.position.z +=0.5 - value;
-            // this.mesh.position.y +=0.5 - value;
-            // this.mesh.position.x +=0.5 - value;
-            // this.material.color.r = valuer*0.7;
-            // this.material.color.g = 0;
-            // this.material.color.b = valueb*0.7;
-            
-            this.mesh.position.z -= value*1000;
-            // console.log('dusty barracuda wearing their milk quartz rings',this);
-          }          
+          }
         },
-        id = $scope.wedgeManager.wedges.length,
+        
         Pi = Math.PI,
         sin = Math.sin,
         cos = Math.cos,
@@ -223,14 +238,17 @@ angular.module('threejs')
         y=0.5,
         startRad = getRadians(startDeg),
         endRad = getRadians(endDeg),
+        vertex2 ={x:radius*cos(startRad), y:radius*sin(startRad)},
+        vertex3 ={x:radius*cos(endRad), y:radius*sin(endRad)},
         a = new THREE.Vector3( 0, 0, 0 ),
-        b = new THREE.Vector3( radius*cos(startRad), radius*sin(startRad), 0 ),
-        c = new THREE.Vector3( radius*cos(endRad), radius*sin(endRad), 0 );
+        b = new THREE.Vector3( vertex2.x, vertex2.y, 0 ),
+        c = new THREE.Vector3( vertex3.x, vertex3.y, 0 );
 
         
-      $scope.wedgeManager.uv[0]={x:0,y:0}
-      $scope.wedgeManager.uv[1]={x:cos(startRad),y:sin(startRad)}
-      $scope.wedgeManager.uv[2]={x:cos(endRad),y:sin(endRad)}
+      $scope.wedgeManager.uv[0]={x:0,y:0};
+      $scope.wedgeManager.uv[1]={x:radius*cos(startRad),y:radius*sin(startRad)};
+      $scope.wedgeManager.uv[2]={x:radius*cos(endRad),y:radius*sin(endRad)};
+
       newWedge.geometry.vertices.push( a, b, c );
       console.log('$scope.wedgeManager',$scope.wedgeManager);
       var face = new THREE.Face3( 0,1,2 );
@@ -255,13 +273,12 @@ angular.module('threejs')
       var ctx = mapCanvas.getContext( '2d' );
     	ctx.translate( imgWidth / 2, imgHeight / 2 );
       // ctx.rotate( startRad );
-      console.log('Brewer eider duck wearing The Orange strong chrysoprase Ring',startRad);
     	ctx.translate( -imgWidth / 2, -imgHeight / 2 );
     	ctx.drawImage( $scope.img, 0, 0, imgWidth, imgHeight );
 
       var texture = new THREE.Texture( mapCanvas );
       texture.needsUpdate = true;
-      
+            
       var material=new THREE.MeshPhongMaterial({ 
         // map: THREE.ImageUtils.loadTexture('/data/images/grid.png', null),
         map: texture,
@@ -269,7 +286,11 @@ angular.module('threejs')
         wrapS: THREE.RepeatWrapping
         // map: THREE.ImageUtils.loadTexture('/data/images/atlas_left@2x.jpg', null)
       });
-       
+      $scope.wedgeManager.offset.x = 0.5;
+      $scope.wedgeManager.offset.y = 0.5;
+
+      // material.map.offset.setX(0.5);
+      // material.map.offset.setY(0.5);
        
       newWedge.mesh = new THREE.Mesh( newWedge.geometry, material );
       newWedge.mesh.dynamic = true
@@ -279,6 +300,7 @@ angular.module('threejs')
       
       $scope.wedgeManager.wedges.push(newWedge);
       $scope.scene.add( newWedge.mesh ); 
+      $scope.wedgeManager.setOffset();
       if($scope.shouldAddedValueFunction){
         $scope.onRenderFcts.push($scope.wedgeManager.updateWedges);
         $scope.shouldAddedValueFunction=false;
@@ -694,7 +716,7 @@ angular.module('threejs')
 	$http.get('/threejs.json').success(function(data) {
 		$scope.config = data;
     $scope.img = new Image();
-    $scope.img.src = '/data/images/grid.png';
+    $scope.img.src = '/data/images/atlas_left@2x.jpg';
     $scope.img.onload = $scope.init;
 		// $scope.templates = data.templates;
 	});
