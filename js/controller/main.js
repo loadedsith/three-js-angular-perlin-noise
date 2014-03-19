@@ -1,6 +1,8 @@
 /*jshint white:false */
 /* global angular:false, Detector:false, console:false */
 
+
+
 angular.module('threejs')
 	.controller('MainCtrl', function ($scope, $http) {
 	'use strict';
@@ -148,8 +150,9 @@ angular.module('threejs')
     wedges:[],
     
     uv:[{x:1,y:0},{x:1,y:1},{x:0,y:1}],
+    offset:{x:0,y:0},
     
-    setUvs: function (attribute) {
+    setUvs: function () {
       console.log('setuvs','');
       for (var i = $scope.wedgeManager.wedges.length - 1; i >= 0; i--) {
         var wedge = $scope.wedgeManager.wedges[i];
@@ -160,6 +163,17 @@ angular.module('threejs')
           new THREE.Vector2($scope.wedgeManager.uv[2].x,$scope.wedgeManager.uv[2].y)
         ]);
         wedge.geometry.uvsNeedUpdate=true;
+        
+      }
+    },
+    setOffset: function () {
+
+      for (var i = $scope.wedgeManager.wedges.length - 1; i >= 0; i--) {
+        var wedge = $scope.wedgeManager.wedges[i];
+      console.log('setOffset',wedge);
+        wedge.mesh.material.map.offset.setX($scope.wedgeManager.offset.x);
+        wedge.mesh.material.map.offset.setY($scope.wedgeManager.offset.y);
+        // wedge.geometry.uvsNeedUpdate=true;
         
       }
     },
@@ -213,6 +227,7 @@ angular.module('threejs')
       
        
       newWedge.mesh = new THREE.Mesh( newWedge.geometry, $scope.material );
+      newWedge.mesh.dynamic = true
       newWedge.mesh.callback = function (id) {
         console.log("clicked wedge: "+id);
       };
@@ -232,7 +247,7 @@ angular.module('threejs')
       var sliceDeg = 360/slices;
       
       for (var i = slices - 1; i >= 0; i--) {
-        $scope.wedgeManager.createWedge(0,0,2, sliceDeg*i, sliceDeg*(i+1));
+        $scope.wedgeManager.createWedge(0,0,1, sliceDeg*i, sliceDeg*(i+1));
       } 
       
     },
@@ -492,6 +507,7 @@ angular.module('threejs')
   
   $scope.init = function () {
     console.log('MainCtrl Init');
+
     if( !Detector.webgl ){
       Detector.addGetWebGLMessage();
       $scope.noWebGl = $scope.config.noWebGl;
@@ -504,9 +520,26 @@ angular.module('threejs')
   	$scope.scene	= new THREE.Scene();
   	$scope.camera	= new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight*.8, 0.01, 1000);
   	$scope.camera.position.z = 4;
-    
+    var imgWidth = 512, imgHeight = 512;    
+    var mapCanvas = document.createElement( 'canvas' );
+    mapCanvas.width = mapCanvas.height = 256;
+    // document.body.appendChild( mapCanvas );
+    var getRadians = function (deg) {return deg * (Math.PI/180)}
+    var ctx = mapCanvas.getContext( '2d' );
+  	ctx.translate( imgWidth / 2, imgHeight / 2 );
+  	ctx.rotate( getRadians( 0 ) );
+  	ctx.translate( -imgWidth / 2, -imgHeight / 2 );
+  	ctx.drawImage( $scope.img, 0, 0, imgWidth, imgHeight );
+
+    var texture = new THREE.Texture( mapCanvas );
+    texture.needsUpdate = true;
+      
     $scope.material=new THREE.MeshPhongMaterial({ 
-      map: THREE.ImageUtils.loadTexture('/data/images/atlas_left@2x.jpg', null)
+      // map: THREE.ImageUtils.loadTexture('/data/images/grid.png', null),
+      map:texture,
+      wrapT: THREE.RepeatWrapping,
+      wrapS: THREE.RepeatWrapping
+      // map: THREE.ImageUtils.loadTexture('/data/images/atlas_left@2x.jpg', null)
     });
 
     
@@ -635,7 +668,9 @@ angular.module('threejs')
 
 	$http.get('/threejs.json').success(function(data) {
 		$scope.config = data;
-    $scope.init();
+    $scope.img = new Image();
+    $scope.img.src = '/data/images/grid.png';
+    $scope.img.onload = $scope.init;
 		// $scope.templates = data.templates;
 	});
 });

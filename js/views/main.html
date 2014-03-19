@@ -1,51 +1,70 @@
 
 <div class="wrapper {{noWebGl||'webGlDetected'|inflector:'variable'}}" 
-ui-keydown="{ 13:'keyDown.enter($event)', 38:'keyDown.up($event)', 40:'keyDown.down($event)', 37:'keyDown.left($event)',  39:'keyDown.right($event)', 87:'keyDown.up($event)', 65:'keyDown.left($event)', 83:'keyDown.down($event)', 68:'keyDown.right($event)', 32:'keyDown.space($event)', 69:'keyDown.e($event)',  70:'keyDown.f($event)', 67:'keyDown.c($event)'}" 
-  ui-keyup="{ 13:'keyUp.enter($event)',   38:'keyUp.up($event)',   40:'keyUp.down($event)',   37:'keyUp.left($event)',     39:'keyUp.right($event)',   87:'keyUp.up($event)',   65:'keyUp.left($event)',   83:'keyUp.down($event)',  68:'keyUp.right($event)',   32:'keyUp.space($event)',   69:'keyUp.e($event)',    70:'keyUp.f($event)',   67:'keyUp.c($event)'}" tabindex="0">
-  <div class="row collapse header">
-    <div class="small-3 columns">
-      <h2 class="subheader">Wedges</h2>
-    </div>
-    <div class="small-3 columns">
-      <p class="subheader">Wedges: {{wedgeManager.wedges.length||0}}</p>
-    </div>
-    <div class="small-3 columns">
-      <div class="row">
-        <div class="small-3 columns">UV1</div>
-        <div class="small-9 columns">
-          <input type="text" ng-change="wedgeManager.setUvs()" ng-model="wedgeManager.uv[0].x"/>,
-          <input type="text" ng-change="wedgeManager.setUvs()" ng-model="wedgeManager.uv[0].y"/>
-        </div>
-      </div>
-      <div class="row">
-        <div class="small-3 columns">UV2</div>
-        <div class="small-9 columns">
-          <input type="text" ng-change="wedgeManager.setUvs()" ng-model="wedgeManager.uv[1].x"/>,
-          <input type="text" ng-change="wedgeManager.setUvs()" ng-model="wedgeManager.uv[1].y"/>
-        </div>
-      </div>
-      <div class="row">
-        <div class="small-3 columns">UV3</div>
-        <div class="small-9 columns">
-          <input type="text" ng-change="wedgeManager.setUvs()" ng-model="wedgeManager.uv[2].x"/>,
-          <input type="text" ng-change="wedgeManager.setUvs()" ng-model="wedgeManager.uv[2].y"/>
-        </div>
-      </div>
-      <a class="button" ng-click="wedgeManager.setUvs(wedgeManager.uv);">uv1</a>
-      
-      <!-- <a class="button" ng-click="tileManager.dumpTiles('');">dump</a>
-      <a class="button" ng-click="tileManager.saveTiles();">save</a>
-      <a class="button" ng-click="toolManager.loadTiles();">load</a>
-      <a class="button" ng-click="toolManager.show('createTile');">createTile</a> -->
-
-    </div>
-    <div class="small-3 columns">
-      <p></p>
-      <!-- <p class="button" ng-click="value = value-1;echoValue()">[-]</p> -->
-      <p class="button" ng-click="toolManager.show('getTileAtCoord');">getTileAtCoord(row,column)</p>
-    </div>
-
+    ui-keydown="{ 13:'keyDown.enter($event)', 38:'keyDown.up($event)', 40:'keyDown.down($event)', 37:'keyDown.left($event)',  39:'keyDown.right($event)', 87:'keyDown.up($event)', 65:'keyDown.left($event)', 83:'keyDown.down($event)', 68:'keyDown.right($event)', 32:'keyDown.space($event)', 69:'keyDown.e($event)',  70:'keyDown.f($event)', 67:'keyDown.c($event)'}" 
+    ui-keyup="{ 13:'keyUp.enter($event)',   38:'keyUp.up($event)',   40:'keyUp.down($event)',   37:'keyUp.left($event)',     39:'keyUp.right($event)',   87:'keyUp.up($event)',   65:'keyUp.left($event)',   83:'keyUp.down($event)',  68:'keyUp.right($event)',   32:'keyUp.space($event)',   69:'keyUp.e($event)',    70:'keyUp.f($event)',   67:'keyUp.c($event)'}" tabindex="0"
+  >
+  <div class=" header">
+<div class="row collapse">
+  <div class="small-3 columns">
+    <h2 class="subheader">Wedges</h2>
   </div>
+  <div class="small-3 columns">
+    <p class="subheader">Wedges: {{wedgeManager.wedges.length||0}}</p>
+  </div>
+  
+  <div class="small-3 columns">
+    <p></p>
+    <!-- <p class="button" ng-click="value = value-1;echoValue()">[-]</p> -->
+  </div>
+</div>
+    <div class="row">
+      <div class="small-3 columns">
+        <div class="row">
+          <div class="small-3 columns" style="color:#000">offset</div>
+          <div class="small-9 columns">
+            <input type="range" min="-1" max="1" style="width:100%" value="0" step="0.1" ng-change="wedgeManager.setOffset()" ng-model="wedgeManager.offset.x"/>,
+            <input type="text" ng-change="wedgeManager.setOffset()" ng-model="wedgeManager.offset.x"/>
+            <input type="range" min="-1" max="1" style="width:100%" value="0" step="0.1" ng-change="wedgeManager.setOffset()" ng-model="wedgeManager.offset.y"/>
+            <input type="text" ng-change="wedgeManager.setOffset()" ng-model="wedgeManager.offset.y"/>
+          </div>
+        </div>
+      </div>
+      <div class="small-3 columns">
+        <div class="row">
+          <div class="small-3 columns" style="color:#000">UV1</div>
+          <div class="small-9 columns">
+            <input type="range" min="-2" max="5" style="width:100%" value="0" step="0.01" ng-change="wedgeManager.setUvs()" ng-model="wedgeManager.uv[0].x"/>,
+            <input type="text" ng-change="wedgeManager.setUvs()" ng-model="wedgeManager.uv[0].x"/>
+            <input type="range" min="-2" max="5" style="width:100%" value="0" step="0.01" ng-change="wedgeManager.setUvs()" ng-model="wedgeManager.uv[0].y"/>
+            <input type="text" ng-change="wedgeManager.setUvs()" ng-model="wedgeManager.uv[0].y"/>
+          </div>
+        </div>
+      </div>
+      <div class="small-3 columns">
+        <div class="row">
+          <div class="small-3 columns" style="color:#000">UV2</div>
+          <div class="small-9 columns">
+            <input type="range" min="-2" max="5" style="width:100%" value="0" step="0.01" ng-change="wedgeManager.setUvs()" ng-model="wedgeManager.uv[1].x"/>,
+            <input type="text" ng-change="wedgeManager.setUvs()" ng-model="wedgeManager.uv[1].x"/>,
+            <input type="range" min="-2" max="5" style="width:100%" value="0" step="0.01" ng-change="wedgeManager.setUvs()" ng-model="wedgeManager.uv[1].y"/>
+            <input type="text" ng-change="wedgeManager.setUvs()" ng-model="wedgeManager.uv[1].y"/>
+          </div>
+        </div>
+      </div>
+      <div class="small-3 columns">
+        <div class="row">
+          <div class="small-3 columns" style="color:#000">UV3</div>
+          <div class="small-9 columns">
+            <input type="range" min="-2" max="5" style="width:100%" value="0" step="0.01" ng-change="wedgeManager.setUvs()" ng-model="wedgeManager.uv[2].x"/>,
+            <input type="text" ng-change="wedgeManager.setUvs()" ng-model="wedgeManager.uv[2].x"/>,
+            <input type="range" min="-2" max="5" style="width:100%" value="0" step="0.01" ng-change="wedgeManager.setUvs()" ng-model="wedgeManager.uv[2].y"/>
+            <input type="text" ng-change="wedgeManager.setUvs()" ng-model="wedgeManager.uv[2].y"/>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
   <div class="row collapse" ng-show="toolManager.tools.getTileAtCoord.show" id="getTileAtCoord">
     <div class="small-3 columns">
       getTileAtCoord(
