@@ -30,7 +30,7 @@ angular.module('threejs').controller('MainCtrl', function ($scope, $http) {
     init: function () {
       $scope.occasionallyDebug.interval = setInterval(function () {
         $scope.occasionallyDebug.dumpDebugStack();        
-      },1000);
+      },5000);
     }
   };
   
@@ -154,7 +154,7 @@ angular.module('threejs').controller('MainCtrl', function ($scope, $http) {
     offset:{x:0,y:0},
     
     setUvs: function () {
-      console.log('setuvs','');
+      // console.log('setuvs','');
       for (var i = $scope.wedgeManager.wedges.length - 1; i >= 0; i--) {
         var wedge = $scope.wedgeManager.wedges[i];
         wedge.geometry.faceVertexUvs[0] = [];
@@ -211,6 +211,7 @@ angular.module('threejs').controller('MainCtrl', function ($scope, $http) {
               'end':this.endDeg
             };
           },
+          'doIt':'once',
           'positionCallback': function (delta,time) {
             
             if(this.shouldStoreDestiny){
@@ -218,30 +219,20 @@ angular.module('threejs').controller('MainCtrl', function ($scope, $http) {
               this.setDestiny();
             }
             var startDeg = 0, 
-              endDeg = 0,
+              endDeg = 180/8,
               startRad = getRadians(startDeg),
               endRad = getRadians(endDeg),
               startUnfoldedRad = getRadians(this.startDeg),
               endUnfoldedRad = getRadians(this.endDeg),
-              idFactor = this.id,
-              animationTime =  ( time + idFactor ) < this.duration ? ( time + idFactor ) : this.duration,
-              timeScale = animationTime/this.duration,
-              vertex2 ={
-                x: radius * cos( startRad + ( startUnfoldedRad * timeScale ) ),
-                y: radius * sin( startRad + ( startUnfoldedRad * timeScale ) )
-              },
-              vertex3 ={
-                x: radius * cos( endRad   + ( endUnfoldedRad  * timeScale ) ),
-                y: radius * sin( endRad   + ( endUnfoldedRad  * timeScale ) )
-              };
-            this.geometry.vertices[0].setX(0);
-            this.geometry.vertices[0].setY(0);
-            this.geometry.vertices[1].setX(vertex2.x);
-            this.geometry.vertices[1].setY(vertex2.y);
-            this.geometry.vertices[2].setX(vertex3.x);
-            this.geometry.vertices[2].setY(vertex3.y);
-           
-            this.geometry.verticesNeedUpdate = true;
+              idFactor = this.id / 3,
+              animationTime =  ( time - idFactor ) < this.duration ? ( time - idFactor ) : this.duration,
+              timeScale = animationTime/this.duration;
+            this.mesh.material.map.offset.setY( 1 * ( 0.5 * timeScale ) );
+            this.mesh.material.map.offset.setX( 1 * ( 0.5 * timeScale ) );
+            if(this.id===1 && timeScale>.5 && doIt==='once'){
+              doIt = false;
+              $scope.debug(['this.mesh.material.map',this.mesh.material.map]);
+            }
           }
         },
         sin = Math.sin,
