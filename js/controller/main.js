@@ -193,8 +193,24 @@ angular.module('threejs')
           geometry : new THREE.Geometry(),
           rotation:{ x:0, y:0, z:0 },
           positionCallback: function (delta,time) {
-            // var tex = this.mesh.material.map;
-            // tex.offset.setY(Math.sin(time));
+            
+            // #### perlinCallback
+            // noise.simplex2 and noise.perlin2 return values between -1 and 1.
+            var value = noise.simplex3(this.row / 10, this.column / 10, time/4);
+            // var valuer = noise.simplex3(this.row / 10, this.column / 10,time/4+100 );
+            // var valueg = noise.simplex3(this.row / 10, this.column / 10,time/4+1000 );
+            // var valueb = noise.simplex3(this.row / 10, this.column / 10,time/4+10000 );
+
+            // var newZ = 0+Math.abs(value);
+            // this.mesh.position.z +=0.5 - value;
+            // this.mesh.position.y +=0.5 - value;
+            // this.mesh.position.x +=0.5 - value;
+            // this.material.color.r = valuer*0.7;
+            // this.material.color.g = 0;
+            // this.material.color.b = valueb*0.7;
+            
+            this.mesh.position.z -= value*1000;
+            // console.log('dusty barracuda wearing their milk quartz rings',this);
           }          
         },
         id = $scope.wedgeManager.wedges.length,
@@ -212,9 +228,11 @@ angular.module('threejs')
         c = new THREE.Vector3( radius*cos(endRad), radius*sin(endRad), 0 );
 
         
-
+      $scope.wedgeManager.uv[0]={x:0,y:0}
+      $scope.wedgeManager.uv[1]={x:cos(startRad),y:sin(startRad)}
+      $scope.wedgeManager.uv[2]={x:cos(endRad),y:sin(endRad)}
       newWedge.geometry.vertices.push( a, b, c );
-
+      console.log('$scope.wedgeManager',$scope.wedgeManager);
       var face = new THREE.Face3( 0,1,2 );
       face.normal.set(0,0,1); // normal
 
@@ -226,7 +244,34 @@ angular.module('threejs')
       ]); // uvs
       
        
-      newWedge.mesh = new THREE.Mesh( newWedge.geometry, $scope.material );
+      //--------------------------
+      //-  make the 2d material  -
+      //--------------------------
+      var imgWidth = 342, imgHeight = 341;    
+      var mapCanvas = document.createElement( 'canvas' );
+      mapCanvas.width = mapCanvas.height = 256;
+      // document.body.appendChild( mapCanvas );
+      // var getRadians = function (deg) {return deg * (Math.PI/180)}
+      var ctx = mapCanvas.getContext( '2d' );
+    	ctx.translate( imgWidth / 2, imgHeight / 2 );
+      // ctx.rotate( startRad );
+      console.log('Brewer eider duck wearing The Orange strong chrysoprase Ring',startRad);
+    	ctx.translate( -imgWidth / 2, -imgHeight / 2 );
+    	ctx.drawImage( $scope.img, 0, 0, imgWidth, imgHeight );
+
+      var texture = new THREE.Texture( mapCanvas );
+      texture.needsUpdate = true;
+      
+      var material=new THREE.MeshPhongMaterial({ 
+        // map: THREE.ImageUtils.loadTexture('/data/images/grid.png', null),
+        map: texture,
+        wrapT: THREE.RepeatWrapping,
+        wrapS: THREE.RepeatWrapping
+        // map: THREE.ImageUtils.loadTexture('/data/images/atlas_left@2x.jpg', null)
+      });
+       
+       
+      newWedge.mesh = new THREE.Mesh( newWedge.geometry, material );
       newWedge.mesh.dynamic = true
       newWedge.mesh.callback = function (id) {
         console.log("clicked wedge: "+id);
@@ -520,27 +565,7 @@ angular.module('threejs')
   	$scope.scene	= new THREE.Scene();
   	$scope.camera	= new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight*.8, 0.01, 1000);
   	$scope.camera.position.z = 4;
-    var imgWidth = 512, imgHeight = 512;    
-    var mapCanvas = document.createElement( 'canvas' );
-    mapCanvas.width = mapCanvas.height = 256;
-    // document.body.appendChild( mapCanvas );
-    var getRadians = function (deg) {return deg * (Math.PI/180)}
-    var ctx = mapCanvas.getContext( '2d' );
-  	ctx.translate( imgWidth / 2, imgHeight / 2 );
-  	ctx.rotate( getRadians( 0 ) );
-  	ctx.translate( -imgWidth / 2, -imgHeight / 2 );
-  	ctx.drawImage( $scope.img, 0, 0, imgWidth, imgHeight );
-
-    var texture = new THREE.Texture( mapCanvas );
-    texture.needsUpdate = true;
-      
-    $scope.material=new THREE.MeshPhongMaterial({ 
-      // map: THREE.ImageUtils.loadTexture('/data/images/grid.png', null),
-      map:texture,
-      wrapT: THREE.RepeatWrapping,
-      wrapS: THREE.RepeatWrapping
-      // map: THREE.ImageUtils.loadTexture('/data/images/atlas_left@2x.jpg', null)
-    });
+    
 
     
   	// declare the rendering loop
