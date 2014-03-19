@@ -223,7 +223,8 @@ angular.module('threejs').controller('MainCtrl', function ($scope, $http) {
               endRad = getRadians(endDeg),
               startUnfoldedRad = getRadians(this.startDeg),
               endUnfoldedRad = getRadians(this.endDeg),
-              animationTime = time < this.duration ? time : this.duration,
+              idFactor = this.id,
+              animationTime =  ( time + idFactor ) < this.duration ? ( time + idFactor ) : this.duration,
               timeScale = animationTime/this.duration,
               vertex2 ={
                 x: radius * cos( startRad + ( startUnfoldedRad * timeScale ) ),
@@ -233,9 +234,6 @@ angular.module('threejs').controller('MainCtrl', function ($scope, $http) {
                 x: radius * cos( endRad   + ( endUnfoldedRad  * timeScale ) ),
                 y: radius * sin( endRad   + ( endUnfoldedRad  * timeScale ) )
               };
-            // if(this.id===0){
-            //   $scope.debug(endUnfoldedRad)
-            // }
             this.geometry.vertices[0].setX(0);
             this.geometry.vertices[0].setY(0);
             this.geometry.vertices[1].setX(vertex2.x);
@@ -277,7 +275,7 @@ angular.module('threejs').controller('MainCtrl', function ($scope, $http) {
       //--------------------------
       //-  make the 2d material  -
       //--------------------------
-      var imgWidth = 342, imgHeight = 341;    
+      var imgWidth = 684, imgHeight = 682;
       var mapCanvas = document.createElement( 'canvas' );
       mapCanvas.width = mapCanvas.height = 256;
       // document.body.appendChild( mapCanvas );
@@ -387,7 +385,7 @@ angular.module('threejs').controller('MainCtrl', function ($scope, $http) {
     $scope.scene.add( backLight );    
 
     $scope.wedgeManager.wedgePie(8,0,180);
-    $scope.wedgeManager.wedgePie(8,-180,180);
+    // $scope.wedgeManager.wedgePie(8,-180,180);
   
     //////////////////////////////////////////////////////////////////////////////////
     //    Camera Controls             //
